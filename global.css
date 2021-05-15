@@ -1,0 +1,71 @@
+/* Resets */
+* {
+	margin: 0;
+	padding: 0;
+}
+
+body {
+	box-sizing: border-box;
+}
+
+/* Buttons and other placeholders */
+
+.button-container {
+	display: flex;
+	justify-content: center;
+	align-items: center;
+	width: 100%;
+	margin: 2rem;
+}
+
+.button {
+	text-align: center;
+	padding: 1rem 1.3rem;
+	border: 2px solid black;
+	border-radius: 5px;
+	font-size: 1.1rem;
+	margin: 0.5rem;
+	min-width: 8rem;
+}
+
+.app-body {
+	width: 100%;
+	height: 100vh;
+	display: flex;
+	flex-direction: column;
+	justify-content: center;
+	align-items: center;
+}
+
+.app-container {
+	width: 60%;
+	height: 60%;
+}
+
+.placeholder {
+	width: 100%;
+	height: 100%;
+	background-color: rgb(255, 255, 255);
+	background-repeat: no-repeat;
+	background-position: center;
+	background-size: cover;
+}
+
+/* Media queries */
+@media screen and (max-width: 450px) {
+	.app-container {
+		width: 90%;
+		height: 60%;
+	}
+}
+
+@media screen and (max-width: 800px) {
+	.app-container {
+		width: 80%;
+		height: 60%;
+	}
+
+	.button {
+		max-width: 4rem;
+	}
+}
