@@ -14,9 +14,9 @@ Make sure the carousel.css file is linked in your html file.
 
 Create a number state with the useState hook and pass the state to the Carousel component as props with the name of **current**. Pass the state update function to the Carousel as props with the name of **setCurrent**.
 
-Touch navigation is handled by the Carousel component internally, but buttons and programmatic navigation is handled by the user by chaning the value of the state that is passed to **current**.
+Touch navigation is handled by the Carousel component internally, but buttons and programmatic navigation is handled by the user by changing the value of the state that is passed to **current**.
 
-**Note: The value of state should never be less than 0 or higher than the length of the array of content - 1 that is passed to the Carousel.**
+**Note: The value of state should never be less than 0 or higher than the length - 1 of the array that is passed to the Carousel as children.**
 
 ## Example
 
