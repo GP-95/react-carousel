@@ -60,12 +60,14 @@ To handle non-touch navigation increment the state passed to Carousel as props _
                 <div>
 
                 // This button allows for infinite scrolling by looping the carousel.
-                <button onClick={()=> setState((state) =>
+                <button onClick={
+                    ()=> setState((state) =>
 							state === 0 ? arrOfElements.length - 1 : state - 1
 						)}>Previous</button>
 
                 // This button does not allow for infinite scrolling
-                <button onClick={()=>setState((state) =>
+                <button onClick={
+                    ()=>setState((state) =>
 							state === arrOfElements.length - 1 ? state : state + 1)}>Next</button>
             </div>
         )
