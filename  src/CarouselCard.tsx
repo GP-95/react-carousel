@@ -7,7 +7,11 @@ interface Props {
 
 function CarouselCard({ child, style }: Props) {
 	return (
-		<div draggable className={`carousel-card`} style={{ ...style }}>
+		<div
+			className={`carousel-card`}
+			style={{
+				...style,
+			}}>
 			{child}
 		</div>
 	)

@@ -6,15 +6,12 @@ import {
 	useReducer,
 	MutableRefObject,
 } from 'react'
+import CarouselButton from './CarouselButton'
 import CarouselCard from './CarouselCard'
 
 interface Props {
 	/**Elements to display in carousel */
 	children: Array<JSX.Element | ReactChild | HTMLElement | Element>
-	/**Initial position of carousel */
-	current: number
-	/**Function to set value of current */
-	setCurrent: Function
 	/**Speed of transition for autoRotate. Default: 300 */
 	speed?: number
 	/**Carousel will allow infinite scrolling, Default: true */
@@ -22,9 +19,9 @@ interface Props {
 }
 
 interface State {
-	touch?: boolean
-	touchStart?: number
-	touchEnd?: number
+	drag?: boolean
+	dragStart?: number
+	dragEnd?: number
 }
 
 interface Action {
@@ -46,160 +43,201 @@ function reducer(state: State, action: Action): State {
 }
 
 const initialState: State = {
-	touch: false,
-	touchStart: 0,
-	touchEnd: 1,
+	drag: false,
+	dragStart: 0,
+	dragEnd: 0,
 }
 
-function Carousel({
-	children,
-	current,
-	setCurrent,
-	speed = 500,
-	infiniteScroll = false,
-}: Props) {
+function Carousel({ children, speed = 500, infiniteScroll = false }: Props) {
+	const [current, setCurrent] = useState(0)
 	const [scroll, setScroll] = useState(0)
 	const [state, dispatch] = useReducer(reducer, initialState)
 	// Get movement direction
 
 	const carouselWidth: MutableRefObject<HTMLDivElement> = useRef(null)
 
-	function touchStart(e: any) {
+	function dragStart(posX: number) {
 		dispatch({
 			type: ActionType.SET_STATE,
 			payload: {
-				touch: true,
-				touchStart: e.changedTouches[0].clientX,
+				drag: true,
+				dragStart: posX,
 			},
 		})
 	}
 
-	function touchEnd(e: any) {
+	function dragEnd(posX: number) {
 		dispatch({
 			type: ActionType.SET_STATE,
 			payload: {
-				touch: false,
-				touchEnd: e.changedTouches[0].clientX,
+				drag: false,
+				dragEnd: posX,
 			},
 		})
-		setScroll(0) //Resets scroll after touch
+		setScroll(0) //Resets scroll after drag
 	}
 
-	function touchMove(e: TouchEvent) {
-		const movement = e.touches[0].clientX
-
+	function dragMove(posX: number) {
 		if (
-			(movement > state.touchStart && current === 0) ||
-			(movement < state.touchStart &&
+			(posX > state.dragStart && current === 0 && !infiniteScroll) ||
+			(posX < state.dragStart &&
 				current === children.length - 1 &&
 				!infiniteScroll)
 		) {
-			// Stops infinite scrolling touch animation
+			// Stops infinite scrolling drag animation
 			return
 		}
 
-		let scrollPercentage
-		if (movement > state.touchStart) {
+		let scrollPercentage: number
+		if (posX > state.dragStart) {
 			scrollPercentage = Math.ceil(
-				((movement - state.touchStart) * 100) /
+				((posX - state.dragStart) * 100) /
 					carouselWidth.current.clientWidth
 			)
 		} else {
 			scrollPercentage = -Math.abs(
 				Math.ceil(
-					((state.touchStart - movement) * 100) /
+					((state.dragStart - posX) * 100) /
 						carouselWidth.current.clientWidth
 				)
 			)
 		}
-		setScroll(scrollPercentage * 3)
+
+		// Prevents over-scrolling
+		if (scrollPercentage > 100) {
+			setScroll(100)
+		} else if (scrollPercentage < -100) {
+			setScroll(-100)
+		} else {
+			setScroll(scrollPercentage)
+		}
 	}
 
 	useEffect(() => {
-		// Handle touch scrolling
-		if (state.touchEnd < state.touchStart && !infiniteScroll) {
+		// Handle drag scrolling
+		if (state.dragEnd < state.dragStart && !infiniteScroll) {
 			setCurrent((state) =>
 				state === children.length - 1 ? children.length - 1 : state + 1
 			)
-		} else if (state.touchEnd < state.touchStart) {
+		} else if (state.dragEnd < state.dragStart - 60) {
 			setCurrent((state) =>
 				state === children.length - 1 ? 0 : state + 1
 			)
-		} else if (state.touchEnd > state.touchStart && !infiniteScroll) {
+		} else if (state.dragEnd > state.dragStart && !infiniteScroll) {
 			setCurrent((state) => (state === 0 ? 0 : state - 1))
-		} else if (state.touchEnd > state.touchStart) {
-			if (state.touchStart === 0) {
+		} else if (state.dragEnd > state.dragStart + 60) {
+			if (state.dragStart === 0) {
 				return
 			}
 			setCurrent((state) =>
 				state === 0 ? children.length - 1 : state - 1
 			)
 		}
-	}, [state.touchEnd])
+	}, [state.dragEnd])
 
 	return (
-		<div
-			ref={carouselWidth}
-			className='carousel-container'
-			onTouchStart={(e) => touchStart(e)}
-			onTouchEnd={(e) => touchEnd(e)}
-			onTouchMove={(e) => touchMove(e)}>
-			{children.map((item, index) => {
-				switch (true) {
-					case current === index:
-						// Active card
-						return (
-							<CarouselCard
-								child={item}
-								style={{
-									opacity: 1,
-									transition: `${speed}ms ease all`,
-									left: scroll,
-								}}
-								key={index}
-							/>
+		<div className='carousel-main'>
+			<div
+				ref={carouselWidth}
+				className='carousel-container'
+				onTouchStart={(e) => dragStart(e.changedTouches[0].clientX)}
+				onTouchEnd={(e) => dragEnd(e.changedTouches[0].clientX)}
+				onTouchMove={(e) => dragMove(e.changedTouches[0].clientX)}
+				onMouseDown={(e) => dragStart(e.clientX)}
+				onMouseUp={(e) => dragEnd(e.clientX)}
+				onMouseMove={(e) => (state.drag ? dragMove(e.clientX) : null)}
+				onMouseLeave={(e) => {
+					if (state.drag) {
+						dragEnd(e.clientX)
+					}
+				}}>
+				{children.map((item, index) => {
+					switch (true) {
+						case current === index:
+							// Active card
+							return (
+								<CarouselCard
+									child={item}
+									style={{
+										opacity: 1,
+										transition: `${speed}ms ease all`,
+										left: `${scroll}%`,
+									}}
+									key={index}
+								/>
+							)
+						case current === children.length - 1 && index === 0:
+							// Next card, if last elem. is active.
+							return (
+								<CarouselCard
+									child={item}
+									style={{
+										left: `${scroll + 100}%`,
+										transition: `${speed}ms ease all`,
+									}}
+									key={index}
+								/>
+							)
+						case current === 0 && index === children.length - 1:
+							// Previous card, if first elem is active.
+							return (
+								<CarouselCard
+									child={item}
+									style={{
+										left: `${scroll - 100}%`,
+										transition: `${speed}ms ease all`,
+									}}
+									key={index}
+								/>
+							)
+						case index === current + 1 || index === current - 1:
+							// Previous or next card if any other is active.
+							return (
+								<CarouselCard
+									child={item}
+									key={index}
+									style={{
+										left:
+											index === current - 1
+												? `${scroll - 100}%`
+												: `${scroll + 100}%`,
+										transition: `${speed}ms ease all`,
+									}}
+								/>
+							)
+					}
+				})}
+			</div>
+			<div className='button-container'>
+				<CarouselButton
+					hidden={current === 0 && !infiniteScroll}
+					label='Prev'
+					type='button'
+					onClick={() =>
+						setCurrent((state) =>
+							state === 0 && infiniteScroll
+								? children.length - 1
+								: state === 0
+								? 0
+								: state - 1
 						)
-					case current === children.length - 1 && index === 0:
-						// Next card, if last elem. is active.
-						return (
-							<CarouselCard
-								child={item}
-								style={{
-									left: `${scroll + 100}%`,
-									transition: `${speed}ms ease all`,
-								}}
-								key={index}
-							/>
+					}
+				/>
+				<CarouselButton
+					hidden={current === children.length - 1 && !infiniteScroll}
+					label='Next'
+					type='button'
+					onClick={() =>
+						setCurrent((state) =>
+							state === children.length - 1 && infiniteScroll
+								? 0
+								: state === children.length - 1
+								? children.length - 1
+								: state + 1
 						)
-					case current === 0 && index === children.length - 1:
-						// Previous card, if first elem is active.
-						return (
-							<CarouselCard
-								child={item}
-								style={{
-									left: `${scroll - 100}%`,
-									transition: `${speed}ms ease all`,
-								}}
-								key={index}
-							/>
-						)
-					case index === current + 1 || index === current - 1:
-						// Previous or next card if any other is active.
-						return (
-							<CarouselCard
-								child={item}
-								key={index}
-								style={{
-									left:
-										index === current - 1
-											? `${scroll - 100}%`
-											: `${scroll + 100}%`,
-									transition: `${speed}ms ease all`,
-								}}
-							/>
-						)
-				}
-			})}
+					}
+				/>
+			</div>
 		</div>
 	)
 }

@@ -1,4 +1,4 @@
-import { Children, useState } from 'react'
+import { useState } from 'react'
 import ReactDOM from 'react-dom'
 import Carousel from './Carousel'
 
@@ -15,15 +15,21 @@ const arr = [
 ]
 
 function App() {
-	const [current, setCurrent] = useState(0)
-
+	const [infiniteScroll, setInfiniteScroll] = useState(false)
 	return (
 		<div className='app-body'>
+			<button
+				className='infinite-button'
+				onClick={() => setInfiniteScroll((state) => !state)}>
+				Infinite scrolling:
+				<span
+					style={{
+						color: infiniteScroll ? 'green' : 'maroon',
+						fontWeight: 'bold',
+					}}>{` ${infiniteScroll}`}</span>
+			</button>
 			<div className='app-container'>
-				<Carousel
-					setCurrent={setCurrent}
-					current={current}
-					infiniteScroll={false}>
+				<Carousel infiniteScroll={infiniteScroll}>
 					{arr.map((item, index) => {
 						return (
 							<div
@@ -34,27 +40,6 @@ function App() {
 						)
 					})}
 				</Carousel>
-			</div>
-			<div className='button-container'>
-				<button
-					className='button'
-					onClick={() =>
-						setCurrent((state) =>
-							state === 0 ? arr.length - 1 : state - 1
-						)
-					}>
-					Previous
-				</button>
-				<p style={{ fontSize: 40 }}>{current}</p>
-				<button
-					className='button'
-					onClick={() =>
-						setCurrent((state) =>
-							state === arr.length - 1 ? 0 : state + 1
-						)
-					}>
-					Next
-				</button>
 			</div>
 		</div>
 	)
