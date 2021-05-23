@@ -22,7 +22,7 @@ The carousel takes up 100% height and width, so a wrapper may be needed.
 
         return (
                 <div className='carousel-wrapper'>
-                    <Carouel>
+                    <Carousel>
                         {arrayOfElements}
                     </Carousel>
                 <div>
