@@ -121,6 +121,7 @@ function Carousel({ children, speed = 500, infiniteScroll = false }: Props) {
 		}
 	}
 
+	// Handles button navigation
 	function handleNavClick(
 		direction: 'previous' | 'next',
 		disableLimit = false
@@ -130,7 +131,7 @@ function Carousel({ children, speed = 500, infiniteScroll = false }: Props) {
 		// Prevent button spamming
 		if (
 			Object.is(clickTime, null) ||
-			date.getTime() > clickTime + 350 ||
+			date.getTime() > clickTime + 390 ||
 			disableLimit
 		) {
 			setClickTime(Date.now())
@@ -198,10 +199,10 @@ function Carousel({ children, speed = 500, infiniteScroll = false }: Props) {
 			// Delays each element change.
 			intervalId.current = setInterval(
 				() => autoScroll(current, userSelection - 1),
-				350
+				390
 			)
 		} else if (scrolling) {
-			// Reset state one scrolling is not needed
+			// Reset state if scrolling is not needed
 			setScrolling(false)
 			direction.current = null
 		}
@@ -211,17 +212,17 @@ function Carousel({ children, speed = 500, infiniteScroll = false }: Props) {
 
 	useEffect(() => {
 		// Handle drag scrolling
-		if (state.dragEnd < state.dragStart - 60 && !infiniteScroll) {
+		if (state.dragEnd < state.dragStart - 90 && !infiniteScroll) {
 			setCurrent((state) =>
 				state === children.length - 1 ? children.length - 1 : state + 1
 			)
-		} else if (state.dragEnd < state.dragStart - 60) {
+		} else if (state.dragEnd < state.dragStart - 90) {
 			setCurrent((state) =>
 				state === children.length - 1 ? 0 : state + 1
 			)
-		} else if (state.dragEnd > state.dragStart + 60 && !infiniteScroll) {
+		} else if (state.dragEnd > state.dragStart + 90 && !infiniteScroll) {
 			setCurrent((state) => (state === 0 ? 0 : state - 1))
-		} else if (state.dragEnd > state.dragStart + 60) {
+		} else if (state.dragEnd > state.dragStart + 90) {
 			if (state.dragStart === 0) {
 				return
 			}
@@ -300,7 +301,7 @@ function Carousel({ children, speed = 500, infiniteScroll = false }: Props) {
 					}
 				})}
 			</div>
-			<div className='button-container'>
+			{/* <div className='button-container'>
 				<CarouselButton
 					hidden={current === 0 && !infiniteScroll}
 					label='Prev'
@@ -313,23 +314,41 @@ function Carousel({ children, speed = 500, infiniteScroll = false }: Props) {
 					type='button'
 					onClick={() => handleNavClick('next')}
 				/>
-			</div>
-			<div className='num-container'>
+			</div> */}
+			<div className='nav-container'>
 				<button
-					className='num-button'
-					onClick={() => setScrolling(true)}>
-					Go to num:
+					disabled={current === 0 && !infiniteScroll ? true : false}
+					className='button'
+					onClick={() => handleNavClick('previous')}>
+					Previous
 				</button>
-				<input
-					className='num-input'
-					min='1'
-					max={children.length}
-					type='number'
-					value={userSelection}
-					onChange={(e: ChangeEvent<HTMLInputElement>) =>
-						setUserSelection(Number(e.target.value))
+				<div className='num-container'>
+					<button
+						className='button num-button'
+						onClick={() => setScrolling(true)}>
+						Go to slide
+					</button>
+					<input
+						className='num-input'
+						min='1'
+						max={children.length}
+						type='number'
+						value={userSelection}
+						onChange={(e: ChangeEvent<HTMLInputElement>) =>
+							setUserSelection(Number(e.target.value))
+						}
+					/>
+				</div>
+				<button
+					disabled={
+						current === children.length - 1 && !infiniteScroll
+							? true
+							: false
 					}
-				/>
+					className='button'
+					onClick={() => handleNavClick('next')}>
+					Next
+				</button>
 			</div>
 		</div>
 	)
