@@ -35,8 +35,7 @@ function App() {
 							<div
 								className='placeholder'
 								style={{ backgroundImage: `url(${item.img})` }}
-								key={index}
-								data-bg={item.img}></div>
+								key={index}></div>
 						)
 					})}
 				</Carousel>
