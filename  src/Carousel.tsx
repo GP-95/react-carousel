@@ -326,18 +326,18 @@ function Carousel({ children, speed = 500, infiniteScroll = false }: Props) {
 					<button
 						className='button num-button'
 						onClick={() => setScrolling(true)}>
-						Go to slide
+						Go to
 					</button>
-					<input
+					<select
 						className='num-input'
-						min='1'
-						max={children.length}
-						type='number'
-						value={userSelection}
-						onChange={(e: ChangeEvent<HTMLInputElement>) =>
+						defaultValue={1}
+						onChange={(e: ChangeEvent<HTMLSelectElement>) =>
 							setUserSelection(Number(e.target.value))
-						}
-					/>
+						}>
+						{children.map((_, index) => (
+							<option value={index + 1}>{index + 1}</option>
+						))}
+					</select>
 				</div>
 				<button
 					disabled={
